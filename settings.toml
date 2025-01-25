@@ -1,0 +1,13 @@
+id = "wallet01"
+
+bind = "0.0.0.0:8008"
+grpc_bind = "0.0.0.0:7008"
+
+nexus_addr = "localhost:7001"
+
+[debug]
+database = true
+print_routes = false
+
+[security]
+internal_public_key = "keys/internal_public_key.pem"
