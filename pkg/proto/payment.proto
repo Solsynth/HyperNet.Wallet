@@ -1,0 +1,60 @@
+syntax = "proto3";
+
+option go_package = ".;proto";
+
+package proto;
+
+service PaymentService {
+  rpc GetWallet(GetWalletRequest) returns (GetWalletResponse) {}
+  rpc GetTransaction(GetTransactionRequest) returns (GetTransactionResponse) {}
+  rpc MakeTransaction(MakeTransactionRequest) returns (TransactionInfo) {}
+  rpc MakeTransactionWithAccount(MakeTransactionWithAccountRequest) returns (TransactionInfo) {}
+}
+
+message WalletInfo {
+  uint64 id = 1;
+  double balance = 2;
+  uint64 account_id = 3;
+}
+
+message TransactionInfo {
+  uint64 id = 1;
+  optional uint64 payer_id = 2;
+  optional uint64 payee_id = 3;
+  double amount = 4;
+  string remark = 5;
+}
+
+message GetWalletRequest {
+  uint64 account_id = 1;
+}
+
+message GetWalletResponse {
+  WalletInfo wallet = 1;
+}
+
+message GetTransactionRequest {
+  uint64 id = 1;
+}
+
+message GetTransactionResponse {
+  TransactionInfo transaction = 1;
+}
+
+message MakeTransactionRequest {
+  optional uint64 payer_id = 1;
+  optional uint64 payee_id = 2;
+  double amount = 3;
+  string remark = 4;
+}
+
+message MakeTransactionResponse {
+  TransactionInfo transaction = 1;
+}
+
+message MakeTransactionWithAccountRequest {
+  optional uint64 payer_account_id = 1;
+  optional uint64 payee_account_id = 2;
+  double amount = 3;
+  string remark = 4;
+}

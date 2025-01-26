@@ -2,6 +2,7 @@ package api
 
 import (
 	"errors"
+	"git.solsynth.dev/hypernet/wallet/pkg/internal/server/exts"
 
 	"git.solsynth.dev/hypernet/nexus/pkg/nex/sec"
 	"git.solsynth.dev/hypernet/wallet/pkg/internal/database"
@@ -16,6 +17,14 @@ func createWallet(c *fiber.Ctx) error {
 		return err
 	}
 	user := c.Locals("user").(*sec.UserInfo)
+
+	var data struct {
+		Password string `json:"password" validate:"min=4"`
+	}
+
+	if err := exts.BindAndValidate(c, &data); err != nil {
+		return err
+	}
 
 	var wallet models.Wallet
 	if err := database.C.Where("account_id = ?", user.ID).
