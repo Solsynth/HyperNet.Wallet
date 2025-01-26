@@ -39,3 +39,25 @@ func getTransaction(c *fiber.Ctx) error {
 		"data":  transactions,
 	})
 }
+
+func getTransactionByID(c *fiber.Ctx) error {
+	id, _ := c.ParamsInt("id", 0)
+
+	if err := sec.EnsureAuthenticated(c); err != nil {
+		return err
+	}
+	user := c.Locals("user").(*sec.UserInfo)
+
+	var transaction models.Transaction
+	if err := database.C.Where("id = ?", id).
+		Preload("Payer").Preload("Payee").
+		First(&transaction).Error; err != nil {
+		return fiber.NewError(fiber.StatusNotFound, err.Error())
+	}
+
+	if transaction.Payer.AccountID != user.ID && transaction.Payee.AccountID != user.ID {
+		return fiber.NewError(fiber.StatusForbidden, "you are not related to this transaction")
+	}
+
+	return c.JSON(transaction)
+}
