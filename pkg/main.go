@@ -31,9 +31,9 @@ func init() {
 
 func main() {
 	// Booting screen
-	fmt.Println(color.YellowString(" ____                _\n|  _ \\ ___  __ _  __| | ___ _ __\n| |_) / _ \\/ _` |/ _` |/ _ \\ '__|\n|  _ <  __/ (_| | (_| |  __/ |\n|_| \\_\\___|\\__,_|\\__,_|\\___|_|"))
+	fmt.Println(color.YellowString("__        __    _ _      _\n\\ \\      / /_ _| | | ___| |_\n \\ \\ /\\ / / _` | | |/ _ \\ __|\n  \\ V  V / (_| | | |  __/ |_\n   \\_/\\_/ \\__,_|_|_|\\___|\\__|"))
 	fmt.Printf("%s v%s\n", color.New(color.FgHiYellow).Add(color.Bold).Sprintf("Hypernet.Wallet"), pkg.AppVersion)
-	fmt.Printf("The scraper in the Solar Network\n")
+	fmt.Printf("The payment system for Hypernet.\n")
 	color.HiBlack("=====================================================\n")
 
 	// Configure settings
