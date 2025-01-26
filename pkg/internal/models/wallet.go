@@ -9,10 +9,9 @@ import (
 type Wallet struct {
 	cruda.BaseModel
 
-	Transactions []Transaction   `json:"transactions"`
-	Balance      decimal.Decimal `json:"amount" sql:"type:decimal(30,2);"`
-	Password     string          `json:"password"`
-	AccountID    uint            `json:"account_id"`
+	Balance   decimal.Decimal `json:"amount" sql:"type:decimal(30,2);"`
+	Password  string          `json:"password"`
+	AccountID uint            `json:"account_id"`
 }
 
 func (v *Wallet) ToWalletInfo() *proto.WalletInfo {
