@@ -9,7 +9,7 @@ import (
 type Wallet struct {
 	cruda.BaseModel
 
-	Balance   decimal.Decimal `json:"amount" sql:"type:decimal(30,2);"`
+	Balance   decimal.Decimal `json:"balance" sql:"type:decimal(30,2);"`
 	Password  string          `json:"password"`
 	AccountID uint            `json:"account_id"`
 }
