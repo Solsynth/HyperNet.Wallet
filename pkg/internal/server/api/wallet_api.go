@@ -2,8 +2,10 @@ package api
 
 import (
 	"errors"
+	"fmt"
 
 	"git.solsynth.dev/hypernet/wallet/pkg/internal/server/exts"
+	"golang.org/x/crypto/bcrypt"
 
 	"git.solsynth.dev/hypernet/nexus/pkg/nex/sec"
 	"git.solsynth.dev/hypernet/wallet/pkg/internal/database"
@@ -33,8 +35,14 @@ func createWallet(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusConflict, "wallet already exists")
 	}
 
+	hashed, err := bcrypt.GenerateFromPassword([]byte(data.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return fiber.NewError(fiber.StatusInternalServerError, fmt.Sprintf("unable to hash your password: %v", err))
+	}
+
 	wallet = models.Wallet{
 		Balance:   decimal.NewFromInt(0),
+		Password:  string(hashed),
 		AccountID: user.ID,
 	}
 
