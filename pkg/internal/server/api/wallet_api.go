@@ -29,7 +29,7 @@ func createWallet(c *fiber.Ctx) error {
 
 	var wallet models.Wallet
 	if err := database.C.Where("account_id = ?", user.ID).
-		First(&wallet).Error; err == nil || errors.Is(err, gorm.ErrRecordNotFound) {
+		First(&wallet).Error; err == nil || !errors.Is(err, gorm.ErrRecordNotFound) {
 		return fiber.NewError(fiber.StatusConflict, "wallet already exists")
 	}
 
