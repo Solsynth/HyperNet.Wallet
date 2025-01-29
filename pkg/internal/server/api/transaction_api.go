@@ -14,7 +14,7 @@ func getTransaction(c *fiber.Ctx) error {
 	if err := sec.EnsureAuthenticated(c); err != nil {
 		return err
 	}
-	user := c.Locals("user").(*sec.UserInfo)
+	user := c.Locals("nex_user").(*sec.UserInfo)
 
 	var wallet models.Wallet
 	if err := database.C.Where("account_id = ?", user.ID).First(&wallet).Error; err != nil {
@@ -46,7 +46,7 @@ func getTransactionByID(c *fiber.Ctx) error {
 	if err := sec.EnsureAuthenticated(c); err != nil {
 		return err
 	}
-	user := c.Locals("user").(*sec.UserInfo)
+	user := c.Locals("nex_user").(*sec.UserInfo)
 
 	var transaction models.Transaction
 	if err := database.C.Where("id = ?", id).
