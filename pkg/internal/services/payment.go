@@ -2,6 +2,7 @@ package services
 
 import (
 	"fmt"
+	"math"
 
 	"git.solsynth.dev/hypernet/passport/pkg/authkit"
 	"git.solsynth.dev/hypernet/pusher/pkg/pushkit"
@@ -12,6 +13,9 @@ import (
 )
 
 func MakeTransaction(amount float64, remark string, payer, payee *models.Wallet) (models.Transaction, error) {
+	// Round amount to keep 2 decimal places
+	amount = math.Round(amount*100) / 100
+
 	transaction := models.Transaction{
 		Amount: decimal.NewFromFloat(amount),
 		Remark: remark,
