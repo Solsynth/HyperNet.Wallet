@@ -4,6 +4,7 @@ import (
 	"net"
 
 	"git.solsynth.dev/hypernet/nexus/pkg/proto"
+	wproto "git.solsynth.dev/hypernet/wallet/pkg/proto"
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
 	health "google.golang.org/grpc/health/grpc_health_v1"
@@ -12,6 +13,7 @@ import (
 
 type Server struct {
 	proto.UnimplementedDirectoryServiceServer
+	wproto.UnimplementedPaymentServiceServer
 	health.UnimplementedHealthServer
 
 	srv *grpc.Server
@@ -23,6 +25,7 @@ func NewGrpc() *Server {
 	}
 
 	proto.RegisterDirectoryServiceServer(server.srv, server)
+	wproto.RegisterPaymentServiceServer(server.srv, server)
 	health.RegisterHealthServer(server.srv, server)
 
 	reflection.Register(server.srv)
