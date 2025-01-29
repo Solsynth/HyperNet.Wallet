@@ -30,6 +30,7 @@ func getTransaction(c *fiber.Ctx) error {
 	var transactions []models.Transaction
 	if err := database.C.Where("payer_id = ? OR payee_id = ?", user.ID, user.ID).
 		Limit(take).Offset(offset).
+		Order("created_at DESC").
 		Find(&transactions).Error; err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
