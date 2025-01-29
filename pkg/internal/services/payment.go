@@ -3,7 +3,10 @@ package services
 import (
 	"fmt"
 
+	"git.solsynth.dev/hypernet/passport/pkg/authkit"
+	"git.solsynth.dev/hypernet/pusher/pkg/pushkit"
 	"git.solsynth.dev/hypernet/wallet/pkg/internal/database"
+	"git.solsynth.dev/hypernet/wallet/pkg/internal/gap"
 	"git.solsynth.dev/hypernet/wallet/pkg/internal/models"
 	"github.com/shopspring/decimal"
 )
@@ -14,6 +17,9 @@ func MakeTransaction(amount float64, remark string, payer, payee *models.Wallet)
 		Remark: remark,
 	}
 	if payer != nil {
+		if payer.Balance.LessThan(transaction.Amount) {
+			return transaction, fmt.Errorf("payer account has insufficient balance to pay this transaction")
+		}
 		transaction.PayerID = &payer.ID
 	}
 	if payee != nil {
@@ -45,6 +51,22 @@ func MakeTransaction(amount float64, remark string, payer, payee *models.Wallet)
 	}
 
 	tx.Commit()
+
+	if payer != nil {
+		authkit.NotifyUser(gap.Nx, uint64(payer.AccountID), pushkit.Notification{
+			Topic:    "wallet.transaction.new",
+			Title:    fmt.Sprintf("Receipt #%d", transaction.ID),
+			Subtitle: transaction.Remark,
+			Body:     fmt.Sprintf("%.2f SRC removed from your wallet. Your new balance is %.2f", amount, payer.Balance.InexactFloat64()),
+			Metadata: map[string]any{
+				"id":      transaction.ID,
+				"amount":  amount,
+				"balance": payer.Balance.InexactFloat64(),
+				"remark":  transaction.Remark,
+			},
+			Priority: 0,
+		})
+	}
 
 	return transaction, nil
 }
