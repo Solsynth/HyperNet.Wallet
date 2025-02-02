@@ -23,7 +23,7 @@ func MapAPIs(app *fiber.App, baseURL string) {
 		{
 			order.Get("/:id", getOrder)
 			order.Post("/:id/pay", payOrder)
-			order.Post("/third-client", createOrderFor3rd)
+			order.Post("/", createOrder)
 		}
 	}
 }

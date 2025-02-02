@@ -25,7 +25,7 @@ func getOrder(c *fiber.Ctx) error {
 	return c.JSON(order)
 }
 
-func createOrderFor3rd(c *fiber.Ctx) error {
+func createOrder(c *fiber.Ctx) error {
 	var data struct {
 		ClientID     string  `json:"client_id" validate:"required"`
 		ClientSecret string  `json:"client_secret" validate:"required"`
