@@ -109,7 +109,7 @@ func payOrder(c *fiber.Ctx) error {
 			return fiber.NewError(fiber.StatusForbidden, "the order cannot paid by you")
 		}
 	} else {
-		if err := database.C.Where("account_id = ?", order.ClientID).First(&payer).Error; err != nil {
+		if err := database.C.Where("account_id = ?", user.ID).First(&payer).Error; err != nil {
 			return fiber.NewError(fiber.StatusBadRequest, "account wallet was not found")
 		}
 	}
