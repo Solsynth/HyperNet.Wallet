@@ -18,5 +18,12 @@ func MapAPIs(app *fiber.App, baseURL string) {
 			transaction.Get("/me", getTransaction)
 			transaction.Get("/:id", getTransactionByID)
 		}
+
+		order := api.Group("/orders").Name("Order API")
+		{
+			order.Get("/:id", getOrder)
+			order.Post("/:id/pay", payOrder)
+			order.Post("/third-client", createOrderFor3rd)
+		}
 	}
 }

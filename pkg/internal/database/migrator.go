@@ -8,6 +8,7 @@ import (
 var AutoMaintainRange = []any{
 	&models.Wallet{},
 	&models.Transaction{},
+	&models.Order{},
 }
 
 func RunMigration(source *gorm.DB) error {
