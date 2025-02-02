@@ -84,7 +84,7 @@ func payOrder(c *fiber.Ctx) error {
 	if err := sec.EnsureAuthenticated(c); err != nil {
 		return err
 	}
-	user := c.Locals("user").(*sec.UserInfo)
+	user := c.Locals("nex_user").(*sec.UserInfo)
 
 	orderId, _ := c.ParamsInt("orderId")
 
