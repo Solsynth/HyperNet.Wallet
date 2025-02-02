@@ -21,8 +21,8 @@ func MapAPIs(app *fiber.App, baseURL string) {
 
 		order := api.Group("/orders").Name("Order API")
 		{
-			order.Get("/:id", getOrder)
-			order.Post("/:id/pay", payOrder)
+			order.Get("/:orderId", getOrder)
+			order.Post("/:orderId/pay", payOrder)
 			order.Post("/", createOrder)
 		}
 	}
