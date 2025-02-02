@@ -12,6 +12,7 @@ import (
 	"git.solsynth.dev/hypernet/wallet/pkg/internal/services"
 	"github.com/gofiber/fiber/v2"
 	"github.com/shopspring/decimal"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func getOrder(c *fiber.Ctx) error {
@@ -87,6 +88,14 @@ func payOrder(c *fiber.Ctx) error {
 
 	orderId, _ := c.ParamsInt("orderId")
 
+	var data struct {
+		WalletPassword string `json:"wallet_password" validate:"required"`
+	}
+
+	if err := exts.BindAndValidate(c, &data); err != nil {
+		return err
+	}
+
 	var order models.Order
 	if err := database.C.Where("id = ?", orderId).First(&order).Error; err != nil {
 		return fiber.NewError(fiber.StatusNotFound, err.Error())
@@ -102,6 +111,11 @@ func payOrder(c *fiber.Ctx) error {
 	} else {
 		if err := database.C.Where("account_id = ?", order.ClientID).First(&payer).Error; err != nil {
 			return fiber.NewError(fiber.StatusBadRequest, "account wallet was not found")
+		}
+	}
+	if payer != nil {
+		if bcrypt.CompareHashAndPassword([]byte(payer.Password), []byte(data.WalletPassword)) != nil {
+			return fiber.NewError(fiber.StatusForbidden, "invalid wallet password")
 		}
 	}
 
