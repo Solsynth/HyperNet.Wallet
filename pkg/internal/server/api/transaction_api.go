@@ -89,20 +89,20 @@ func makeTransaction(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusForbidden, fmt.Sprintf("could not get client info: %v", err))
 	}
 
-	// System client, spec payee was not allowed
+	// System client, spec payer was not allowed
 	var payee, payer *models.Wallet
 	if client.AccountID != nil && data.PayeeID != nil {
-		if err := database.C.Where("id = ? AND account_id = ?", data.PayeeID, client.AccountID).First(&payee).Error; err != nil {
-			return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("payee id %d not found", data.PayeeID))
+		if err := database.C.Where("id = ? AND account_id = ?", data.PayerID, client.AccountID).First(&payer).Error; err != nil {
+			return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("payer id %d not found", data.PayerID))
 		}
 	}
-	if client.AccountID != nil && payee == nil {
-		return fiber.NewError(fiber.StatusBadRequest, "payee is required if issuer is individual")
+	if client.AccountID != nil && payer == nil {
+		return fiber.NewError(fiber.StatusBadRequest, "payer is required if issuer is individual")
 	}
 
-	if data.PayerID != nil {
-		if err := database.C.Where("id = ?", data.PayerID).First(&payer).Error; err != nil {
-			return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("payer id %d not found", data.PayerID))
+	if data.PayeeID != nil {
+		if err := database.C.Where("id = ?", data.PayeeID).First(&payee).Error; err != nil {
+			return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("payer id %d not found", data.PayeeID))
 		}
 	}
 
