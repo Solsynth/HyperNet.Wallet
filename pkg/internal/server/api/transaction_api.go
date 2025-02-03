@@ -1,9 +1,15 @@
 package api
 
 import (
+	"fmt"
+
 	"git.solsynth.dev/hypernet/nexus/pkg/nex/sec"
+	"git.solsynth.dev/hypernet/passport/pkg/authkit"
 	"git.solsynth.dev/hypernet/wallet/pkg/internal/database"
+	"git.solsynth.dev/hypernet/wallet/pkg/internal/gap"
 	"git.solsynth.dev/hypernet/wallet/pkg/internal/models"
+	"git.solsynth.dev/hypernet/wallet/pkg/internal/server/exts"
+	"git.solsynth.dev/hypernet/wallet/pkg/internal/services"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -61,4 +67,49 @@ func getTransactionByID(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(transaction)
+}
+
+func makeTransaction(c *fiber.Ctx) error {
+	var data struct {
+		ClientID     string  `json:"client_id" validate:"required"`
+		ClientSecret string  `json:"client_secret" validate:"required"`
+		Remark       string  `json:"remark" validate:"required"`
+		Amount       float64 `json:"amount" validate:"required"`
+		PayeeID      *uint   `json:"payee_id"`
+		PayerID      *uint   `json:"payer_id"`
+	}
+
+	if err := exts.BindAndValidate(c, &data); err != nil {
+		return err
+	}
+
+	// Validating client
+	client, err := authkit.GetThirdClientByAlias(gap.Nx, data.ClientID, &data.ClientSecret)
+	if err != nil {
+		return fiber.NewError(fiber.StatusForbidden, fmt.Sprintf("could not get client info: %v", err))
+	}
+
+	// System client, spec payee was not allowed
+	var payee, payer *models.Wallet
+	if client.AccountID != nil && data.PayeeID != nil {
+		if err := database.C.Where("id = ? AND account_id = ?", data.PayeeID, client.AccountID).First(&payee).Error; err != nil {
+			return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("payee id %d not found", data.PayeeID))
+		}
+	}
+	if data.PayerID != nil {
+		if err := database.C.Where("id = ?", data.PayerID).First(&payer).Error; err != nil {
+			return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("payer id %d not found", data.PayerID))
+		}
+	}
+
+	if payee == nil && payer == nil {
+		return fiber.NewError(fiber.StatusBadRequest, "payee and payer cannot be both blank")
+	}
+
+	tran, err := services.MakeTransaction(data.Amount, data.Remark, payer, payee)
+	if err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
+	}
+
+	return c.JSON(tran)
 }

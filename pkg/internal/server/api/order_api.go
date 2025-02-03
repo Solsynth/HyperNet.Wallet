@@ -56,7 +56,7 @@ func createOrder(c *fiber.Ctx) error {
 	// System client, spec payee was not allowed
 	if client.AccountID != nil && data.PayeeID != nil {
 		var payee models.Wallet
-		if err := database.C.Where("id = ?", data.PayeeID).First(&payee).Error; err != nil {
+		if err := database.C.Where("id = ? AND account_id = ?", data.PayeeID, client.AccountID).First(&payee).Error; err != nil {
 			return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("payee id %d not found", data.PayeeID))
 		} else {
 			order.Payee = &payee
