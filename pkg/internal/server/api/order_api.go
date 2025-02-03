@@ -146,3 +146,33 @@ func payOrder(c *fiber.Ctx) error {
 
 	return c.JSON(order)
 }
+
+func cancelOrder(c *fiber.Ctx) error {
+	var data struct {
+		ClientID     string `json:"client_id" validate:"required"`
+		ClientSecret string `json:"client_secret" validate:"required"`
+	}
+
+	orderId, _ := c.ParamsInt("orderId")
+
+	if err := exts.BindAndValidate(c, &data); err != nil {
+		return err
+	}
+
+	// Validating client
+	client, err := authkit.GetThirdClientByAlias(gap.Nx, data.ClientID, &data.ClientSecret)
+	if err != nil {
+		return fiber.NewError(fiber.StatusForbidden, fmt.Sprintf("could not get client info: %v", err))
+	}
+
+	var order models.Order
+	if err := database.C.Where("id = ? AND client_id = ?", orderId, client.ID).First(&order).Error; err != nil {
+		return fiber.NewError(fiber.StatusNotFound, err.Error())
+	}
+
+	if err := database.C.Model(&order).Updates(&models.Order{Status: models.OrderStatusCanceled}).Error; err != nil {
+		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
+	}
+
+	return c.JSON(order)
+}
