@@ -96,6 +96,10 @@ func makeTransaction(c *fiber.Ctx) error {
 			return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("payee id %d not found", data.PayeeID))
 		}
 	}
+	if client.AccountID != nil && payee == nil {
+		return fiber.NewError(fiber.StatusBadRequest, "payee is required if issuer is individual")
+	}
+
 	if data.PayerID != nil {
 		if err := database.C.Where("id = ?", data.PayerID).First(&payer).Error; err != nil {
 			return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("payer id %d not found", data.PayerID))
