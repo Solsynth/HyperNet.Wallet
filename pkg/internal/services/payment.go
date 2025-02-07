@@ -71,6 +71,21 @@ func MakeTransaction(amount float64, remark string, payer, payee *models.Wallet)
 			Priority: 0,
 		})
 	}
+	if payee != nil {
+		authkit.NotifyUser(gap.Nx, uint64(payee.AccountID), pushkit.Notification{
+			Topic:    "wallet.transaction.new",
+			Title:    fmt.Sprintf("Receipt #%d", transaction.ID),
+			Subtitle: transaction.Remark,
+			Body:     fmt.Sprintf("%.2f SRC added from your wallet. Your new balance is %.2f", amount, payee.Balance.InexactFloat64()),
+			Metadata: map[string]any{
+				"id":      transaction.ID,
+				"amount":  amount,
+				"balance": payee.Balance.InexactFloat64(),
+				"remark":  transaction.Remark,
+			},
+			Priority: 0,
+		})
+	}
 
 	return transaction, nil
 }
