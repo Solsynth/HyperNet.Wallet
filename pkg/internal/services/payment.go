@@ -76,7 +76,7 @@ func MakeTransaction(amount float64, remark string, payer, payee *models.Wallet)
 			Topic:    "wallet.transaction.new",
 			Title:    fmt.Sprintf("Receipt #%d", transaction.ID),
 			Subtitle: transaction.Remark,
-			Body:     fmt.Sprintf("%.2f SRC added from your wallet. Your new balance is %.2f", amount, payee.Balance.InexactFloat64()),
+			Body:     fmt.Sprintf("%.2f SRC added to your wallet. Your new balance is %.2f", amount, payee.Balance.InexactFloat64()),
 			Metadata: map[string]any{
 				"id":      transaction.ID,
 				"amount":  amount,
