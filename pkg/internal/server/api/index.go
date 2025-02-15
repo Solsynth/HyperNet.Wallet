@@ -15,7 +15,7 @@ func MapAPIs(app *fiber.App, baseURL string) {
 
 		transaction := api.Group("/transactions").Name("Transaction API")
 		{
-			transaction.Get("/me", getTransaction)
+			transaction.Get("/me", listTransaction)
 			transaction.Get("/:id", getTransactionByID)
 			transaction.Post("/", makeTransaction)
 		}

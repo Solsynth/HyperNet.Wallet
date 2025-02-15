@@ -13,7 +13,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func getTransaction(c *fiber.Ctx) error {
+func listTransaction(c *fiber.Ctx) error {
 	take := c.QueryInt("take", 0)
 	offset := c.QueryInt("offset", 0)
 
@@ -28,13 +28,13 @@ func getTransaction(c *fiber.Ctx) error {
 	}
 
 	var count int64
-	if err := database.C.Model(&models.Transaction{}).Where("payer_id = ? OR payee_id = ?", user.ID, user.ID).
+	if err := database.C.Model(&models.Transaction{}).Where("payer_id = ? OR payee_id = ?", wallet.ID, wallet.ID).
 		Count(&count).Error; err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
 
 	var transactions []models.Transaction
-	if err := database.C.Where("payer_id = ? OR payee_id = ?", user.ID, user.ID).
+	if err := database.C.Where("payer_id = ? OR payee_id = ?", wallet.ID, wallet.ID).
 		Limit(take).Offset(offset).
 		Order("created_at DESC").
 		Find(&transactions).Error; err != nil {
