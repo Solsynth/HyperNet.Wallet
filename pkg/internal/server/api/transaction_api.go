@@ -11,6 +11,7 @@ import (
 	"git.solsynth.dev/hypernet/wallet/pkg/internal/server/exts"
 	"git.solsynth.dev/hypernet/wallet/pkg/internal/services"
 	"github.com/gofiber/fiber/v2"
+	"github.com/samber/lo"
 )
 
 func listTransaction(c *fiber.Ctx) error {
@@ -77,10 +78,15 @@ func makeTransaction(c *fiber.Ctx) error {
 		Amount       float64 `json:"amount" validate:"required"`
 		PayeeID      *uint   `json:"payee_id"`
 		PayerID      *uint   `json:"payer_id"`
+		Currency     string  `json:"currency" validate:"required"`
 	}
 
 	if err := exts.BindAndValidate(c, &data); err != nil {
 		return err
+	}
+
+	if !lo.Contains([]string{"normal", "golden"}, data.Currency) {
+		return fiber.NewError(fiber.StatusBadRequest, "invalid currency")
 	}
 
 	// Validating client
@@ -110,7 +116,7 @@ func makeTransaction(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, "payee and payer cannot be both blank")
 	}
 
-	tran, err := services.MakeTransaction(data.Amount, data.Remark, payer, payee)
+	tran, err := services.MakeTransaction(data.Amount, data.Remark, data.Currency, payer, payee)
 	if err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}

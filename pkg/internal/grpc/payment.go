@@ -50,7 +50,7 @@ func (v *Server) MakeTransaction(ctx context.Context, request *proto.MakeTransac
 		}
 	}
 
-	transaction, err := services.MakeTransaction(request.GetAmount(), request.GetRemark(), payerWallet, payeeWallet)
+	transaction, err := services.MakeTransaction(request.GetAmount(), request.GetRemark(), request.GetCurrency(), payerWallet, payeeWallet)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, err.Error())
 	}
@@ -77,7 +77,7 @@ func (v *Server) MakeTransactionWithAccount(ctx context.Context, request *proto.
 		}
 	}
 
-	transaction, err := services.MakeTransaction(request.GetAmount(), request.GetRemark(), payerWallet, payeeWallet)
+	transaction, err := services.MakeTransaction(request.GetAmount(), request.GetRemark(), request.GetCurrency(), payerWallet, payeeWallet)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, err.Error())
 	}

@@ -14,7 +14,8 @@ service PaymentService {
 message WalletInfo {
   uint64 id = 1;
   double balance = 2;
-  uint64 account_id = 3;
+  double golden_balance = 3;
+  uint64 account_id = 4;
 }
 
 message TransactionInfo {
@@ -23,6 +24,7 @@ message TransactionInfo {
   optional uint64 payee_id = 3;
   double amount = 4;
   string remark = 5;
+  string currency = 6;
 }
 
 message GetWalletRequest {
@@ -46,6 +48,7 @@ message MakeTransactionRequest {
   optional uint64 payee_id = 2;
   double amount = 3;
   string remark = 4;
+  string currency = 5;
 }
 
 message MakeTransactionResponse {
@@ -57,4 +60,5 @@ message MakeTransactionWithAccountRequest {
   optional uint64 payee_account_id = 2;
   double amount = 3;
   string remark = 4;
+  string currency = 5;
 }

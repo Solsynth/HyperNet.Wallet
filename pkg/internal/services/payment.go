@@ -12,13 +12,14 @@ import (
 	"github.com/shopspring/decimal"
 )
 
-func MakeTransaction(amount float64, remark string, payer, payee *models.Wallet) (models.Transaction, error) {
+func MakeTransaction(amount float64, remark, currency string, payer, payee *models.Wallet) (models.Transaction, error) {
 	// Round amount to keep 2 decimal places
 	amount = math.Round(amount*100) / 100
 
 	transaction := models.Transaction{
-		Amount: decimal.NewFromFloat(amount),
-		Remark: remark,
+		Amount:   decimal.NewFromFloat(amount),
+		Remark:   remark,
+		Currency: currency,
 	}
 	if payer != nil {
 		if payer.Balance.LessThan(transaction.Amount) {
@@ -38,7 +39,12 @@ func MakeTransaction(amount float64, remark string, payer, payee *models.Wallet)
 	}
 
 	if payer != nil {
-		payer.Balance = payer.Balance.Sub(transaction.Amount)
+		switch currency {
+		case "golden":
+			payer.GoldenBalance = payer.GoldenBalance.Sub(transaction.Amount)
+		default:
+			payer.Balance = payer.Balance.Sub(transaction.Amount)
+		}
 		if err := tx.Model(payer).
 			Updates(&models.Wallet{Balance: payer.Balance}).Error; err != nil {
 			tx.Rollback()
@@ -46,7 +52,12 @@ func MakeTransaction(amount float64, remark string, payer, payee *models.Wallet)
 		}
 	}
 	if payee != nil {
-		payee.Balance = payee.Balance.Add(transaction.Amount)
+		switch currency {
+		case "golden":
+			payee.GoldenBalance = payee.GoldenBalance.Add(transaction.Amount)
+		default:
+			payee.Balance = payee.Balance.Add(transaction.Amount)
+		}
 		if err := tx.Model(payee).
 			Updates(&models.Wallet{Balance: payee.Balance}).Error; err != nil {
 			tx.Rollback()
@@ -63,10 +74,18 @@ func MakeTransaction(amount float64, remark string, payer, payee *models.Wallet)
 			Subtitle: transaction.Remark,
 			Body:     fmt.Sprintf("%.2f SRC removed from your wallet. Your new balance is %.2f", amount, payer.Balance.InexactFloat64()),
 			Metadata: map[string]any{
-				"id":      transaction.ID,
-				"amount":  amount,
-				"balance": payer.Balance.InexactFloat64(),
-				"remark":  transaction.Remark,
+				"id":     transaction.ID,
+				"amount": amount,
+				"balance": (func() float64 {
+					switch currency {
+					case "golden":
+						return payer.GoldenBalance.InexactFloat64()
+					default:
+						return payer.Balance.InexactFloat64()
+					}
+				})(),
+				"remark":   transaction.Remark,
+				"currency": currency,
 			},
 			Priority: 0,
 		})
@@ -78,10 +97,18 @@ func MakeTransaction(amount float64, remark string, payer, payee *models.Wallet)
 			Subtitle: transaction.Remark,
 			Body:     fmt.Sprintf("%.2f SRC added to your wallet. Your new balance is %.2f", amount, payee.Balance.InexactFloat64()),
 			Metadata: map[string]any{
-				"id":      transaction.ID,
-				"amount":  amount,
-				"balance": payee.Balance.InexactFloat64(),
-				"remark":  transaction.Remark,
+				"id":     transaction.ID,
+				"amount": amount,
+				"balance": (func() float64 {
+					switch currency {
+					case "golden":
+						return payee.GoldenBalance.InexactFloat64()
+					default:
+						return payee.Balance.InexactFloat64()
+					}
+				})(),
+				"remark":   transaction.Remark,
+				"currency": currency,
 			},
 			Priority: 0,
 		})

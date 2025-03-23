@@ -24,4 +24,5 @@ type Order struct {
 	Transaction   *Transaction    `json:"transaction"`
 	TransactionID *uint           `json:"transaction_id"`
 	ClientID      *uint           `json:"client_id"`
+	Currency      string          `json:"currency"`
 }

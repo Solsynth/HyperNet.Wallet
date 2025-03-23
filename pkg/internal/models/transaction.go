@@ -10,12 +10,13 @@ import (
 type Transaction struct {
 	cruda.BaseModel
 
-	Remark  string          `json:"remark"` // The usage of this transaction
-	Amount  decimal.Decimal `json:"amount" type:"decimal(30,2);"`
-	Payer   *Wallet         `json:"payer" foreignKey:"PayerID"` // Who give the money
-	Payee   *Wallet         `json:"payee" foreignKey:"PayeeID"` // Who get the money
-	PayerID *uint           `json:"payer_id"`                   // Leave this field as nil means pay from the system
-	PayeeID *uint           `json:"payee_id"`                   // Leave this field as nil means pay to the system
+	Remark   string          `json:"remark"` // The usage of this transaction
+	Amount   decimal.Decimal `json:"amount" type:"decimal(30,2);"`
+	Currency string          `json:"currency" gorm:"default:'normal'"`
+	Payer    *Wallet         `json:"payer" foreignKey:"PayerID"` // Who give the money
+	Payee    *Wallet         `json:"payee" foreignKey:"PayeeID"` // Who get the money
+	PayerID  *uint           `json:"payer_id"`                   // Leave this field as nil means pay from the system
+	PayeeID  *uint           `json:"payee_id"`                   // Leave this field as nil means pay to the system
 }
 
 func (v *Transaction) ToTransactionInfo() *proto.TransactionInfo {

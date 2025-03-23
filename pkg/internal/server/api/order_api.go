@@ -11,6 +11,7 @@ import (
 	"git.solsynth.dev/hypernet/wallet/pkg/internal/server/exts"
 	"git.solsynth.dev/hypernet/wallet/pkg/internal/services"
 	"github.com/gofiber/fiber/v2"
+	"github.com/samber/lo"
 	"github.com/shopspring/decimal"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -34,10 +35,15 @@ func createOrder(c *fiber.Ctx) error {
 		Amount       float64 `json:"amount" validate:"required"`
 		PayeeID      *uint   `json:"payee_id"`
 		PayerID      *uint   `json:"payer_id"`
+		Currency     string  `json:"currency" validate:"required"`
 	}
 
 	if err := exts.BindAndValidate(c, &data); err != nil {
 		return err
+	}
+
+	if !lo.Contains([]string{"normal", "golden"}, data.Currency) {
+		return fiber.NewError(fiber.StatusBadRequest, "invalid currency")
 	}
 
 	// Validating client
@@ -50,6 +56,7 @@ func createOrder(c *fiber.Ctx) error {
 		Status:   models.OrderStatusPending,
 		Remark:   data.Remark,
 		Amount:   decimal.NewFromFloat(data.Amount),
+		Currency: data.Currency,
 		ClientID: &client.ID,
 	}
 
@@ -126,7 +133,7 @@ func payOrder(c *fiber.Ctx) error {
 		}
 	}
 
-	if tran, err := services.MakeTransaction(order.Amount.InexactFloat64(), order.Remark, payer, payee); err != nil {
+	if tran, err := services.MakeTransaction(order.Amount.InexactFloat64(), order.Remark, order.Currency, payer, payee); err != nil {
 		return fiber.NewError(fiber.StatusPaymentRequired, err.Error())
 	} else {
 		if err := database.C.Model(&order).Updates(&models.Order{
@@ -137,6 +144,7 @@ func payOrder(c *fiber.Ctx) error {
 			_, _ = services.MakeTransaction(
 				order.Amount.InexactFloat64(),
 				fmt.Sprintf("%s - #%d Refund", order.Remark, order.ID),
+				order.Currency,
 				payee,
 				payer,
 			)
