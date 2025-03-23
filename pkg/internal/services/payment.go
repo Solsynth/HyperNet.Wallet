@@ -22,7 +22,14 @@ func MakeTransaction(amount float64, remark, currency string, payer, payee *mode
 		Currency: currency,
 	}
 	if payer != nil {
-		if payer.Balance.LessThan(transaction.Amount) {
+		isInsufficient := false
+		switch currency {
+		case "golden":
+			isInsufficient = payer.GoldenBalance.LessThan(transaction.Amount)
+		default:
+			isInsufficient = payer.Balance.LessThan(transaction.Amount)
+		}
+		if isInsufficient {
 			return transaction, fmt.Errorf("payer account has insufficient balance to pay this transaction")
 		}
 		transaction.PayerID = &payer.ID
@@ -46,7 +53,7 @@ func MakeTransaction(amount float64, remark, currency string, payer, payee *mode
 			payer.Balance = payer.Balance.Sub(transaction.Amount)
 		}
 		if err := tx.Model(payer).
-			Updates(&models.Wallet{Balance: payer.Balance}).Error; err != nil {
+			Updates(&models.Wallet{Balance: payer.Balance, GoldenBalance: payer.GoldenBalance}).Error; err != nil {
 			tx.Rollback()
 			return transaction, fmt.Errorf("failed to update payer wallet balance: %w", err)
 		}
@@ -59,7 +66,7 @@ func MakeTransaction(amount float64, remark, currency string, payer, payee *mode
 			payee.Balance = payee.Balance.Add(transaction.Amount)
 		}
 		if err := tx.Model(payee).
-			Updates(&models.Wallet{Balance: payee.Balance}).Error; err != nil {
+			Updates(&models.Wallet{Balance: payee.Balance, GoldenBalance: payee.GoldenBalance}).Error; err != nil {
 			tx.Rollback()
 			return transaction, fmt.Errorf("failed to update payee wallet balance: %w", err)
 		}
